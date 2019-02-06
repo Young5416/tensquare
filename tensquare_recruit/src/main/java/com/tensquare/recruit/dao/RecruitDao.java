@@ -1,19 +1,20 @@
 package com.tensquare.recruit.dao;
 
-import com.tensquare.recruit.pojo.Recruit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import com.tensquare.recruit.pojo.Recruit;
 
 import java.util.List;
 
 /**
- * @description: 招聘数据访问接口
- * @author: Young
- * @create: 2019-02-06 17:11
+ * 数据访问接口
+ * @author Administrator
+ *
  */
-public interface RecruitDao
-    extends JpaRepository<Recruit, String>, JpaSpecificationExecutor<Recruit> {
-  public List<Recruit> findTop6ByStateOrderByCreatetimeDesc(String State);
+public interface RecruitDao extends JpaRepository<Recruit,String>,JpaSpecificationExecutor<Recruit>{
 
-  public List<Recruit> findTop6ByStateNotOrderByCreatetimeDesc(String State);
+	public List<Recruit> findTop6ByStateOrderByCreatetimeDesc(String state);//where state=? order by createime
+
+    public List<Recruit> findTop6ByStateNotOrderByCreatetimeDesc(String state);//where state!=? order by createime
 }
