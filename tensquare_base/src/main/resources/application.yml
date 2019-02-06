@@ -12,3 +12,12 @@ spring:
     database: mysql
     show-sql: true
     generate-ddl: true
+  output:
+    ansi:
+      enabled: detect
+logging:
+path: ./logs/
+level:
+root: debug
+logging.level.com.tensquare.base.dao: degug
+
