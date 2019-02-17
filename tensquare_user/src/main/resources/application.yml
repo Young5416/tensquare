@@ -2,10 +2,10 @@ server:
   port: 9008
 spring:
   application:
-    name: tensquare-search
+    name: tensquare-user
     ##数据库连接信息
   datasource:
-    url: jdbc:mysql://192.168.132.129:3306/tensquare_base?characterEncoding=utf-8
+    url: jdbc:mysql://192.168.132.129:3306/tensquare_user?characterEncoding=utf-8
     username: root
     password: root
     driver-class-name: com.mysql.jdbc.Driver
@@ -49,3 +49,7 @@ spring:
     host: 192.168.132.129
 logging:
   config: classpath:logback-spring.xml
+jwt:
+  config:
+    key: Young
+    ttl: 3600000

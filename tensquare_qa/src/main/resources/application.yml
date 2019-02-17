@@ -44,3 +44,6 @@ spring:
       enabled: always
 logging:
   config: classpath:logback-spring.xml
+jwt:
+  config:
+    key: Young

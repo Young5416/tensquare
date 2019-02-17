@@ -2,15 +2,18 @@ package com.tensquare.user.service;
 
 import com.tensquare.user.dao.UserDao;
 import com.tensquare.user.pojo.User;
+import io.jsonwebtoken.Claims;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import util.IdWorker;
+import util.JwtUtil;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -39,6 +42,12 @@ public class UserService {
 
   @Autowired private IdWorker idWorker;
 
+  @Autowired
+  private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+  @Autowired
+  private JwtUtil jwtUtil;
+
   /**
    * @Description: 发送短信验证码 @Param: [mobile]
    *
@@ -57,6 +66,7 @@ public class UserService {
     }
     // 验证码存入redis
     redisTemplate.opsForValue().set("smsCode_"+mobile, code + "", 5, TimeUnit.MINUTES);
+    System.out.println(code);
     // 验证码 手机号 发送给rabbitmq
     Map<String, String> map = new HashMap<>();
     map.put("mobile", mobile);
@@ -71,7 +81,8 @@ public class UserService {
    */
   public void add(User user) {
     user.setId(idWorker.nextId() + "");
-
+    //密码加密
+    user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
     user.setFollowcount(0); // 关注数
     user.setFanscount(0); // 粉丝数
     user.setOnline(0L); // 在线时长
@@ -140,11 +151,13 @@ public class UserService {
    * @param id
    */
   public void deleteById(String id) {
-    String token = (String) request.getAttribute("claims_admin");
-    if (token == null || "".equals(token)) {
-      throw new RuntimeException("权限不足！");
-    }
-    userDao.deleteById(id);
+      String claims_admin = (String)request.getAttribute("claims_admin");
+
+      if(claims_admin == null ||"".equals(claims_admin)){
+          throw new RuntimeException("权限不足！");
+      }
+
+      userDao.deleteById(id);
   }
 
   /**
@@ -223,4 +236,20 @@ public class UserService {
       }
     };
   }
+
+  /**
+  * @Description: 用户登录
+  * @Param: [user]
+  * @return: com.tensquare.user.pojo.User
+  * @Author: Young
+  * @Date: 2019/2/17
+  */
+  public User login(User user) {
+      User dataUser = userDao.findByMobile(user.getMobile());
+      if(dataUser != null && bCryptPasswordEncoder.matches(user.getPassword(),dataUser.getPassword())){
+          return dataUser;
+      }
+      return null;
+  }
+
 }

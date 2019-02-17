@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
+import util.JwtUtil;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -27,6 +29,29 @@ public class UserController {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    /** 
+    * @Description: 用户登录
+    * @Param: [user] 
+    * @return: entity.Result 
+    * @Author: Young
+    * @Date: 2019/2/17 
+    */ 
+    @RequestMapping(value = "/login",method = RequestMethod.POST)
+    public Result login(@RequestBody User user){
+         User loginUser = userService.login(user);
+         if(loginUser == null){
+             return new Result(false,StatusCode.LOGINERROR,"登录失败");
+         }
+        String token = jwtUtil.createJWT(user.getId(), user.getMobile(), "user");
+         Map<String,String> map = new HashMap<>();
+         map.put("token",token);
+         map.put("roles","user");
+        return new Result(true,StatusCode.OK,"登录成功",map);
+    }
 
     /** 
     * @Description: 发送注册验证码 
@@ -52,11 +77,12 @@ public class UserController {
     public Result register(@RequestBody User user,@PathVariable  String code){
         //判断验证码
         String sysCode = (String)redisTemplate.opsForValue().get("smsCode_" + user.getMobile());
-        if(!sysCode.equals(code)){
-            throw new RuntimeException("验证码输入不正确");
-        }
+
         if(sysCode.isEmpty()){
             throw new RuntimeException("请获取验证码");
+        }
+        if(!sysCode.equals(code)){
+            throw new RuntimeException("验证码输入不正确");
         }
         userService.add(user);
         return new Result(true,StatusCode.OK,"添加成功");
