@@ -49,6 +49,12 @@ spring:
     host: 192.168.132.129
 logging:
   config: classpath:logback-spring.xml
+eureka:
+  client:
+    service-url:
+       defaultZone: http://127.0.0.1:6868/eureka
+  instance:
+    prefer-ip-address: true
 jwt:
   config:
     key: Young
